@@ -2,20 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:ticketmaster/models/my_model.dart';
 import 'package:ticketmaster/screens/widget_setting.dart';
-
-class MyModel {
-  String? seat, row, count, showName, showDetails, showTime;
-
-  MyModel(
-      {this.seat,
-      this.row,
-      this.count,
-      this.showName,
-      this.showDetails,
-      this.showTime});
-}
-
+import 'package:ticketmaster/shared_preferences.dart';
 class MyWidget extends StatefulWidget {
   @override
   _MyWidgetState createState() => _MyWidgetState();
@@ -25,60 +14,64 @@ class _MyWidgetState extends State<MyWidget> {
   MyModel myModel = MyModel(
     seat: '1',
     row: '2',
-    count: '5',
+    sec: '5',
     showName: 'Example Show',
     showTime: 'sat.jun24.6.30 PM',
     showDetails: 'Lorem ipsum dolor sit amet.',
   );
+  TextEditingController seatController = TextEditingController();
+  TextEditingController rowController = TextEditingController();
+  TextEditingController secController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
+  TextEditingController detailsController = TextEditingController();
+  TextEditingController showTimeController = TextEditingController();
   bool isEditing = false;
-  File? selectedImage;
+  File? selectedImage; // Declare the selectedImage variable
 
-  Future<File?> pickImage() async {
-    final pickedImage =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedImage != null) {
-      return File(pickedImage.path);
-    }
-    return null;
+  @override
+  void initState() {
+    super.initState();
+    loadDataFromPreferences();
   }
 
+  void loadDataFromPreferences() async {
+    await SharedPreferencesService.initSharedPreferences();
+    SharedPreferencesService.loadDataFromPreferences(myModel);
+
+    setState(() {
+      seatController.text = myModel.seat ?? '';
+      rowController.text = myModel.row ?? '';
+      secController.text = myModel.sec ?? '';
+      nameController.text = myModel.showName ?? '';
+      detailsController.text = myModel.showDetails ?? '';
+      showTimeController.text = myModel.showTime ?? '';
+    });
+  }
   Future<void> uploadImage() async {
-    final pickedImage = await pickImage();
+    final pickedImage = await SharedPreferencesService.pickImage();
     if (pickedImage != null) {
       setState(() {
         selectedImage = pickedImage;
       });
+      SharedPreferencesService.saveDataToPreferences(myModel, selectedImage);
     }
   }
-
-  TextEditingController seatController = TextEditingController();
-  TextEditingController rowController = TextEditingController();
-  TextEditingController countController = TextEditingController();
-  TextEditingController nameController = TextEditingController();
-  TextEditingController detailsController = TextEditingController();
-  TextEditingController showTimeController = TextEditingController();
+  Future<void> updateValues() async {
+    myModel.seat = seatController.text;
+    myModel.row = rowController.text;
+    myModel.sec = secController.text;
+    myModel.showName = nameController.text;
+    myModel.showDetails = detailsController.text;
+    myModel.showTime = showTimeController.text;
+    SharedPreferencesService.saveDataToPreferences(myModel, selectedImage);
+    setState(() {
+      isEditing = false;
+    });
+  }
 
   void startEditing() {
     setState(() {
       isEditing = true;
-      seatController.text = myModel.seat.toString();
-      rowController.text = myModel.row.toString();
-      countController.text = myModel.count.toString();
-      nameController.text = myModel.showName.toString();
-      detailsController.text = myModel.showDetails.toString();
-      showTimeController.text = myModel.showTime.toString();
-    });
-  }
-
-  void updateValues() {
-    setState(() {
-      myModel.seat = seatController.text;
-      myModel.row = rowController.text;
-      myModel.count = countController.text;
-      myModel.showName = nameController.text;
-      myModel.showDetails = detailsController.text;
-      myModel.showTime = showTimeController.text;
-      isEditing = false;
     });
   }
 
@@ -86,7 +79,7 @@ class _MyWidgetState extends State<MyWidget> {
   void dispose() {
     seatController.dispose();
     rowController.dispose();
-    countController.dispose();
+    secController.dispose();
     nameController.dispose();
     detailsController.dispose();
     showTimeController.dispose();
@@ -144,7 +137,7 @@ class _MyWidgetState extends State<MyWidget> {
                                       20, FontWeight.w300, Colors.white),
                                 ),
                                 Text(
-                                  '${myModel.seat}',
+                                  '${myModel.sec}',
                                   style: myFontStyle(
                                       20, FontWeight.w500, Colors.white),
                                 ),
@@ -172,7 +165,7 @@ class _MyWidgetState extends State<MyWidget> {
                                       20, FontWeight.w300, Colors.white),
                                 ),
                                 Text(
-                                  '${myModel.count}',
+                                  '${myModel.seat}',
                                   style: myFontStyle(
                                       20, FontWeight.w500, Colors.white),
                                 ),
@@ -190,7 +183,7 @@ class _MyWidgetState extends State<MyWidget> {
                   child: Column(
                     children: [
                       TextField(
-                        controller: seatController,
+                        controller: secController,
                         decoration: InputDecoration(labelText: 'SEC'),
                       ),
                       TextField(
@@ -198,7 +191,7 @@ class _MyWidgetState extends State<MyWidget> {
                         decoration: InputDecoration(labelText: 'Row'),
                       ),
                       TextField(
-                        controller: countController,
+                        controller: seatController,
                         decoration: InputDecoration(labelText: 'SEAT'),
                       ),
                       TextField(
@@ -467,11 +460,11 @@ class TransferTicket extends StatelessWidget {
             child: Row(
               children: [
                 Text('Sec ',style: myFontStyle(25,FontWeight.w400,Colors.grey),),
-                Text('${myModel.seat}, ',style: myFontStyle(25,FontWeight.w400),),
+                Text('${myModel.sec}, ',style: myFontStyle(25,FontWeight.w400),),
                 Text('Row ',style: myFontStyle(25,FontWeight.w400,Colors.grey),),
                 Text('${myModel.row}, ',style: myFontStyle(25,FontWeight.w400),),
                 Text('Seat ',style: myFontStyle(25,FontWeight.w400,Colors.grey),),
-                Text('${myModel.count}',style: myFontStyle(25,FontWeight.w400),),
+                Text('${myModel.seat}',style: myFontStyle(25,FontWeight.w400),),
               ],
             ),
           ),
