@@ -285,27 +285,31 @@ class _MyWidgetState extends State<MyWidget> {
               ),
             ),
           ),
-          Container(
-            margin: EdgeInsets.symmetric(vertical: 20, horizontal: 70),
-            height: 60,
-            decoration: BoxDecoration(
-              color: hexToColor("#171717"),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                    child: Image.asset(
-                  'assets/images/wallet.jpg',
-                  fit: BoxFit.cover,
-                )),
-                Text(
-                  "Add to Apple Wallet",
-                  style: myFontStyle(20, FontWeight.w400, Colors.white),
+          Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                height: 50,
+                width: mq.width*.60,
+                decoration: BoxDecoration(
+                  color: hexToColor("#171717"),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-              ],
-            ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/images/wallet.jpg',
+                      fit: BoxFit.cover,
+                    ),
+                    Text(
+                      "Add to Apple Wallet",
+                      style: myFontStyle(14, FontWeight.w400, Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           Container(
             margin: EdgeInsets.symmetric(vertical: 15),
